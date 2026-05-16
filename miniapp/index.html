@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Market</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f5f5;--surface:#fff;--border:#e0e0e0;
+  --text:#1a1a1a;--muted:#888;--accent:#0088cc;
+  --accent-bg:#e8f4fd;--danger:#e53935;--success:#43a047;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 14px;position:sticky;top:0;z-index:10}
+.topbar-title{font-size:17px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.search-row{display:flex;gap:8px}
+.search-wrap{flex:1;position:relative}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--muted)}
+#searchInput{width:100%;padding:9px 10px 9px 32px;border:1px solid var(--border);border-radius:10px;font-size:14px;background:var(--bg);outline:none}
+.filter-btn{padding:9px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:4px}
+.filter-btn.active{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
+.cats{display:flex;gap:8px;overflow-x:auto;padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--border);scrollbar-width:none}
+.cats::-webkit-scrollbar{display:none}
+.cat{padding:6px 14px;border-radius:20px;font-size:13px;border:1px solid var(--border);background:var(--surface);cursor:pointer;white-space:nowrap;color:var(--muted)}
+.cat.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}
+.sort-bar{display:flex;gap:6px;padding:8px 14px;align-items:center}
+.sort-label{font-size:12px;color:var(--muted)}
+.sort-btn{padding:4px 10px;border-radius:20px;font-size:12px;border:1px solid var(--border);background:var(--surface);cursor:pointer;color:var(--muted)}
+.sort-btn.active{border-color:var(--accent);color:var(--accent);font-weight:500}
+.count{font-size:12px;color:var(--muted);margin-left:auto}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:10px 14px 90px}
+.card{background:var(--surface);border-radius:14px;border:1px solid var(--border);overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.card-img{width:100%;aspect-ratio:1;object-fit:cover;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:40px}
+.card-img img{width:100%;height:100%;object-fit:cover}
+.card-body{padding:8px 10px 10px}
+.card-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.card-sub{font-size:11px;color:var(--muted);margin-bottom:6px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.card-price{font-size:15px;font-weight:700;color:var(--text)}
+.card-price span{font-size:11px;font-weight:400;color:var(--muted)}
+.badge{display:inline-block;font-size:10px;padding:2px 6px;border-radius:4px;margin-bottom:4px;font-weight:500}
+.badge-new{background:#e8f5e9;color:#2e7d32}
+.badge-hot{background:#fff3e0;color:#e65100}
+.contact-btn{width:100%;margin-top:8px;padding:7px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-size:12px;cursor:pointer;font-weight:600}
+.empty{text-align:center;padding:60px 16px;color:var(--muted);grid-column:span 2}
+.empty-icon{font-size:48px;margin-bottom:12px}
+.loading{text-align:center;padding:60px 16px;color:var(--muted);grid-column:span 2}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.filter-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:20}
+.filter-overlay.open{display:block}
+.filter-panel{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-radius:20px 20px 0 0;padding:20px 16px;z-index:21;transform:translateY(100%);transition:transform .3s}
+.filter-panel.open{transform:translateY(0)}
+.filter-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px}
+.filter-panel h3{font-size:16px;font-weight:600;margin-bottom:16px}
+.price-row{display:flex;gap:10px;align-items:center;margin-bottom:20px}
+.price-row input{flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;outline:none}
+.apply-btn{width:100%;padding:14px;border-radius:12px;background:var(--accent);color:#fff;font-size:16px;font-weight:600;border:none;cursor:pointer}
+.limit-banner{margin:10px 14px;padding:10px 14px;background:#fff8e1;border-radius:10px;border:1px solid #ffe082;font-size:13px;display:flex;align-items:center;gap:8px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-title">🛍 Market</div>
+  <div class="search-row">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input id="searchInput" placeholder="Mahsulot qidiring..." oninput="debouncedRender()">
+    </div>
+    <button class="filter-btn" onclick="toggleFilter()" id="filterBtn">⚙️ Filtr</button>
+  </div>
+</div>
+
+<div class="cats" id="cats">
+  <button class="cat active" onclick="setCat('Barchasi',this)">Barchasi</button>
+</div>
+
+<div class="sort-bar">
+  <span class="sort-label">Saralash:</span>
+  <button class="sort-btn active" onclick="setSort('new',this)">Yangi</button>
+  <button class="sort-btn" onclick="setSort('asc',this)">Arzon</button>
+  <button class="sort-btn" onclick="setSort('desc',this)">Qimmat</button>
+  <span class="count" id="countLabel"></span>
+</div>
+
+<div id="limitBanner" style="display:none" class="limit-banner">
+  ⚠️ Bepul limit: 20 ta mahsulot. <a href="#" style="color:#e65100;text-decoration:none;font-weight:600">Pro olish →</a>
+</div>
+
+<div class="grid" id="grid">
+  <div class="loading"><div class="spinner"></div>Yuklanmoqda...</div>
+</div>
+
+<div class="filter-overlay" id="filterOverlay" onclick="closeFilter()"></div>
+<div class="filter-panel" id="filterPanel">
+  <div class="filter-handle"></div>
+  <h3>Narx filtri (so'm)</h3>
+  <div class="price-row">
+    <input type="number" id="minPrice" placeholder="Dan">
+    <span style="color:var(--muted)">—</span>
+    <input type="number" id="maxPrice" placeholder="Gacha">
+  </div>
+  <button class="apply-btn" onclick="applyFilter()">Qo'llash</button>
+</div>
+
+<script>
+const tg = window.Telegram?.WebApp;
+if(tg) { tg.ready(); tg.expand(); }
+
+const BACKEND = "BACKEND_URL_PLACEHOLDER";
+const params = new URLSearchParams(location.search);
+const CHANNEL_ID = params.get("channel") || "-1001234567890";
+
+let activeCat = "Barchasi";
+let sortMode = "new";
+let filterOpen = false;
+let allCategories = ["Barchasi"];
+let debounceTimer;
+let currentMin = null, currentMax = null;
+
+function debouncedRender() {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(loadProducts, 400);
+}
+
+async function loadCategories() {
+  try {
+    const res = await fetch(`${BACKEND}/api/categories?channel_id=${CHANNEL_ID}`);
+    const data = await res.json();
+    allCategories = ["Barchasi", ...data.categories.map(c => c.category)];
+    renderCats();
+  } catch(e) {}
+}
+
+function renderCats() {
+  const el = document.getElementById("cats");
+  el.innerHTML = allCategories.map(c =>
+    `<button class="cat${c===activeCat?" active":""}" onclick="setCat('${c}',this)">${c}</button>`
+  ).join("");
+}
+
+function setCat(c, btn) {
+  activeCat = c;
+  renderCats();
+  loadProducts();
+}
+
+function setSort(m, btn) {
+  sortMode = m;
+  document.querySelectorAll(".sort-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  loadProducts();
+}
+
+function toggleFilter() {
+  filterOpen = !filterOpen;
+  document.getElementById("filterOverlay").classList.toggle("open", filterOpen);
+  document.getElementById("filterPanel").classList.toggle("open", filterOpen);
+}
+
+function closeFilter() {
+  filterOpen = false;
+  document.getElementById("filterOverlay").classList.remove("open");
+  document.getElementById("filterPanel").classList.remove("open");
+}
+
+function applyFilter() {
+  currentMin = document.getElementById("minPrice").value || null;
+  currentMax = document.getElementById("maxPrice").value || null;
+  const btn = document.getElementById("filterBtn");
+  btn.classList.toggle("active", !!(currentMin || currentMax));
+  closeFilter();
+  loadProducts();
+}
+
+function getCategoryEmoji(cat) {
+  const map = {"Telefon":"📱","Kompyuter":"🖥️","Kiyim":"👕","Elektronika":"🎧","Maishiy":"🏠","Boshqa":"📦"};
+  return map[cat] || "📦";
+}
+
+async function loadProducts() {
+  const q = document.getElementById("searchInput").value;
+  let url = `${BACKEND}/api/products?channel_id=${CHANNEL_ID}&sort=${sortMode}`;
+  if(activeCat !== "Barchasi") url += `&category=${encodeURIComponent(activeCat)}`;
+  if(currentMin) url += `&min_price=${currentMin}`;
+  if(currentMax) url += `&max_price=${currentMax}`;
+  if(q) url += `&search=${encodeURIComponent(q)}`;
+
+  const grid = document.getElementById("grid");
+  
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    const products = data.products || [];
+    const total = data.total || 0;
+
+    document.getElementById("countLabel").textContent = `${total} ta mahsulot`;
+
+    if(!products.length) {
+      grid.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div>Hech narsa topilmadi</div>`;
+      return;
+    }
+
+    grid.innerHTML = products.map(p => `
+      <div class="card">
+        <div class="card-img">
+          ${p.image_url
+            ? `<img src="${p.image_url}" alt="${p.name}" onerror="this.parentElement.innerHTML='${getCategoryEmoji(p.category)}'">`
+            : getCategoryEmoji(p.category)
+          }
+        </div>
+        <div class="card-body">
+          ${p.condition==="Yangi"?'<span class="badge badge-new">✓ Yangi</span>':''}
+          <div class="card-name">${p.name}</div>
+          <div class="card-sub">${p.description||p.category}</div>
+          <div class="card-price">${Number(p.price).toLocaleString()} <span>so'm</span></div>
+          <button class="contact-btn" onclick="openContact(${JSON.stringify(p).replace(/"/g,'&quot;')})">📞 Bog'lanish</button>
+        </div>
+      </div>
+    `).join("");
+
+  } catch(e) {
+    grid.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>Xatolik yuz berdi. Internet aloqasini tekshiring.</div>`;
+  }
+}
+
+function openContact(product) {
+  if(tg && product.contact) {
+    if(product.contact.startsWith("@")) {
+      tg.openTelegramLink(`https://t.me/${product.contact.slice(1)}`);
+    } else {
+      tg.openLink(`tel:${product.contact.replace(/\s/g,"")}`);
+    }
+  } else if(product.contact) {
+    alert(`Bog'lanish: ${product.contact}`);
+  }
+}
+
+loadCategories();
+loadProducts();
+</script>
+</body>
+</html>
