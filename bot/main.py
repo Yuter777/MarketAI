@@ -9,7 +9,7 @@ from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_applicati
 from aiohttp import web
 import anthropic
 
-BOT_TOKEN = os.getenv("8896492649:AAFQVXUvwV7iB5wI-jGyDugLqITk-5aeAKo")
+BOT_TOKEN = os.getenv("BOT_TOKEN", "8896492649:AAFQVXUvwV7iB5wI-jGyDugLqITk-5aeAKo")
 BACKEND_URL = os.getenv("https://marketai-jpte.onrender.com", "http://localhost:8000")
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # Render URL
 ANTHROPIC_API_KEY = os.getenv("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")
