@@ -1,0 +1,21 @@
+{
+  "name": "telegram-humo-forwarder",
+  "version": "1.0.0",
+  "description": "Production-ready Telegram forwarder for HUMO card notifications",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "generate-session": "node scripts/generateSession.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1",
+    "telegram": "^2.22.2",
+    "input": "^1.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}
